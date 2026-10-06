@@ -788,25 +788,30 @@ def load_upcoming_matches():
 
 
 def split_teams(title, listing=""):
-    """Try to extract the two teams from the Cricbuzz title/listing."""
-
+    """Extract actual team names from match title, listing or URL slug."""
     text = f"{title} {listing}".strip()
+    text = text.replace("Cricket commentary |", "").replace("Cricket commentary|", "").strip()
 
-    # Common format: Cricket commentary | NAM vs RSA, 3rd ODI...
-    match = pd.Series([text]).str.extract(
-        r"\b([A-Z]{2,4})\s+vs\s+([A-Z]{2,4})\b",
-        expand=True
-    )
+    if " vs " in text:
+        part = text.split(",")[0].strip()
+        if " vs " in part:
+            p = part.split(" vs ", 1)
+            t1 = p[0].strip()
+            t2 = p[1].strip()
+            t1 = re.sub(r"^(?:\d+(?:st|nd|rd|th)?\s+Match|Pool\s+[A-Z]|Preview|LIVE)\s*", "", t1, flags=re.I).strip()
+            t2 = re.sub(r"\s*(?:1st|2nd|3rd|4th|5th|\d+(?:st|nd|rd|th)?\s+Match|Pool\s+[A-Z]|Preview|LIVE).*$", "", t2, flags=re.I).strip()
+            if " • " in t1:
+                t1 = t1.split(" • ")[-1].strip()
+            if t1 and t2 and t1.lower() != "team 1" and t2.lower() != "team 2":
+                return t1, t2
 
-    if not match.empty and pd.notna(match.iloc[0, 0]):
-        return match.iloc[0, 0], match.iloc[0, 1]
+    # Extract from Cricbuzz URL slug: e.g. /live-cricket-scores/174067/usa-vs-nam-...
+    m_slug = re.search(r"/live-cricket-scores/\d+/([a-z0-9]+)-vs-([a-z0-9]+)", text, re.I)
+    if not m_slug:
+        m_slug = re.search(r"\b([a-z0-9]{2,15})-vs-([a-z0-9]{2,15})\b", text, re.I)
 
-    # Fallback for titles containing full team names.
-    clean = text.split("|")[-1].strip()
-
-    if " vs " in clean:
-        parts = clean.split(" vs ", 1)
-        return parts[0].strip(), parts[1].split(",")[0].strip()
+    if m_slug:
+        return m_slug.group(1).upper(), m_slug.group(2).upper()
 
     return "Team 1", "Team 2"
 
