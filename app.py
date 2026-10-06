@@ -2,8 +2,19 @@ import streamlit as st
 import pandas as pd
 import requests
 import re
+import os
+import textwrap
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
+
+from src.condition_metrics import (
+    calculate_batting_percentage,
+    calculate_pace_assistance,
+    calculate_spin_assistance,
+    calculate_dew_probability,
+    calculate_pitch_surface_badge,
+    load_stadium_analytics,
+)
 
 
 # ============================================================
@@ -61,6 +72,66 @@ st.markdown("""
     border-radius: 14px;
     padding: 20px;
     margin-bottom: 15px;
+}
+
+.pitch-surface-card {
+    background: #0d1728;
+    border: 1px solid #1c2c44;
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.pitch-surface-header {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.surface-badge-box {
+    background: #111e34;
+    border: 1px solid #203554;
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    color: #d8e5ff;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    margin-bottom: 25px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+}
+
+.progress-group {
+    margin-bottom: 18px;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #c0d1e5;
+}
+
+.progress-track {
+    width: 100%;
+    height: 10px;
+    background-color: #162438;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #1d75f2, #38bdf8);
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
 .prediction-card {
@@ -149,7 +220,64 @@ def load_pitch_data():
         return pd.DataFrame()
 
 
+@st.cache_data
+def load_arena_data():
+    try:
+        if os.path.exists("data/arena_subset.csv"):
+            return pd.read_csv("data/arena_subset.csv")
+        return pd.read_excel(
+            "data/arena_player_rating_calculated.xlsx",
+            header=5,
+            usecols=[
+                "ID",
+                "Format",
+                "Average vs LH Fast Bowler",
+                "Average vs RH Fast Bowler",
+                "Average vs LH Spin Bowler",
+                "Average vs RH Spin Bowler",
+                "Expected Strike Rate vs Fast Bowling",
+                "Expected Strike Rate vs Spin",
+                "Balls per Boundary Fast",
+            ]
+        )
+    except Exception:
+        return pd.DataFrame()
+
+
+@st.cache_data
+def load_cricket_player_stats():
+    try:
+        if os.path.exists("data/cricket_player_stats_subset.csv"):
+            return pd.read_csv("data/cricket_player_stats_subset.csv")
+        return pd.read_excel(
+            "data/cricket_player_stats.xlsx",
+            usecols=[
+                "Player ID",
+                "Player Name",
+                "Team Name",
+                "Team Short",
+                "Format",
+                "Batting Average",
+                "Batting Strike Rate",
+            ]
+        )
+    except Exception:
+        return pd.DataFrame()
+
+
+@st.cache_data
+def load_stadium_analytics_data():
+    try:
+        return load_stadium_analytics()
+    except Exception:
+        return pd.DataFrame()
+
+
 pitch_data = load_pitch_data()
+arena_data = load_arena_data()
+cricket_player_stats = load_cricket_player_stats()
+stadium_analytics = load_stadium_analytics_data()
+
 
 
 # ============================================================
@@ -801,9 +929,6 @@ with st.sidebar:
         analyze_button = False
 
     else:
-        # Keep only the next 30 matches to keep the selector manageable.
-        upcoming_matches = upcoming_matches[:30]
-
         match_options = []
 
         for match in upcoming_matches:
@@ -1000,6 +1125,128 @@ if analyze_button and selected_match is not None:
                     calculate_weather_influence(forecast)
                 )
 
+                # ------------------------------------------------
+                # CONDITION METRICS
+                # ------------------------------------------------
+
+                match_type = str(
+                    selected_match.get("match_type", "")
+                ).strip()
+
+                if not match_type:
+                    match_text = (
+                        str(selected_match.get("title", ""))
+                        + " "
+                        + str(selected_match.get("listing", ""))
+                    ).lower()
+
+                    if "test" in match_text:
+                        match_type = "Test"
+                    elif "odi" in match_text:
+                        match_type = "ODI"
+                    elif "t20" in match_text:
+                        match_type = "T20"
+
+                batting_percentage = calculate_batting_percentage(
+                    pitch_data,
+                    venue,
+                    cricket_player_stats,
+                    team1,
+                    team2,
+                    match_type,
+                    weather=forecast,
+                    stadium_analytics=stadium_analytics
+                )
+
+                pace_assistance = calculate_pace_assistance(
+                    arena_data,
+                    match_type,
+                    cricket_player_stats,
+                    team1,
+                    team2,
+                    venue=venue,
+                    weather=forecast,
+                    stadium_analytics=stadium_analytics
+                )
+
+                spin_assistance = calculate_spin_assistance(
+                    arena_data,
+                    match_type,
+                    cricket_player_stats,
+                    team1,
+                    team2,
+                    venue=venue,
+                    weather=forecast,
+                    stadium_analytics=stadium_analytics
+                )
+
+                dew_probability = calculate_dew_probability(
+                    forecast["temperature_min"],
+                    forecast["humidity"]
+                )
+
+                surface_badge = calculate_pitch_surface_badge(
+                    batting_percentage,
+                    pace_assistance,
+                    spin_assistance,
+                    dew_probability
+                )
+
+                # ------------------------------------------------
+                # PITCH & SURFACE CARD (as in screenshot)
+                # ------------------------------------------------
+
+                batting_val = batting_percentage if batting_percentage is not None else 50.0
+                pace_val = pace_assistance if pace_assistance is not None else 50.0
+                spin_val = spin_assistance if spin_assistance is not None else 50.0
+                dew_val = dew_probability if dew_probability is not None else 50.0
+
+                pitch_surface_html = f"""<div class="pitch-surface-card">
+<div class="pitch-surface-header">Pitch &amp; Surface</div>
+<div class="surface-badge-box">{surface_badge}</div>
+<div class="progress-group">
+<div class="progress-header">
+<span>Batting</span>
+<span>{batting_val:.0f}%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: {batting_val:.0f}%;"></div>
+</div>
+</div>
+<div class="progress-group">
+<div class="progress-header">
+<span>Pace Assistance</span>
+<span>{pace_val:.0f}%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: {pace_val:.0f}%;"></div>
+</div>
+</div>
+<div class="progress-group">
+<div class="progress-header">
+<span>Spin Assistance</span>
+<span>{spin_val:.0f}%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: {spin_val:.0f}%;"></div>
+</div>
+</div>
+<div class="progress-group">
+<div class="progress-header">
+<span>Dew Probability</span>
+<span>{dew_val:.0f}%</span>
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: {dew_val:.0f}%;"></div>
+</div>
+</div>
+</div>"""
+
+                st.markdown(
+                    pitch_surface_html,
+                    unsafe_allow_html=True
+                )
+
                 st.markdown(
                     '<div class="section-title">Match-Day Weather</div>',
                     unsafe_allow_html=True
@@ -1116,6 +1363,80 @@ if analyze_button and selected_match is not None:
                         """,
                         unsafe_allow_html=True
                     )
+
+                # ------------------------------------------------
+                # MATCH CONDITION METRICS
+                # ------------------------------------------------
+
+                st.markdown(
+                    '<div class="section-title">Match Condition Metrics</div>',
+                    unsafe_allow_html=True
+                )
+
+                metric_values = [
+                    (
+                        "BATTING PERCENTAGE",
+                        batting_percentage,
+                        "%",
+                        "Dynamic venue & matchup batting index"
+                    ),
+                    (
+                        "PACE ASSISTANCE",
+                        pace_assistance,
+                        "%",
+                        "Stadium pitch & atmospheric swing index"
+                    ),
+                    (
+                        "SPIN ASSISTANCE",
+                        spin_assistance,
+                        "%",
+                        "Stadium pitch turn & dry track index"
+                    ),
+                    (
+                        "DEW PROBABILITY",
+                        dew_probability,
+                        "%",
+                        "Weather dew condensation estimate"
+                    ),
+                ]
+
+                metric_cols = st.columns(4)
+
+                for column, (label, value, suffix, description) in zip(
+                    metric_cols,
+                    metric_values
+                ):
+                    with column:
+                        if value is None:
+                            display_value = "N/A"
+                        else:
+                            display_value = f"{value:.1f}{suffix}"
+
+                        st.markdown(
+                            f"""
+                            <div class="metric-card">
+                                <div class="metric-label">{label}</div>
+                                <div class="metric-value">
+                                    {display_value}
+                                </div>
+                                <div class="small-text" style="margin-top:6px;">
+                                    {description}
+                                </div>
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
+
+                st.markdown(
+                    """
+                    <div class="info-box" style="margin-top:12px;">
+                        <b>Metric note:</b> Batting percentage, pace assistance, spin assistance,
+                        and dew probability are dynamically calculated for each stadium, pitch, match,
+                        and weather forecast using historical ball-by-ball venue analytics and matchup data.
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
                 # ------------------------------------------------
                 # PITCH ANALYSIS

@@ -1,0 +1,42 @@
+venue,country,avg_1inn_runs,pace_wicket_pct,spin_wicket_pct,pace_econ,spin_econ,bounce_rating,seam_swing_rating,turn_rating,boundary_freq
+Wankhede Stadium,India,182,68.5,31.5,8.6,7.8,8.2,7.5,4.8,5.2
+M Chinnaswamy Stadium,India,190,66.0,34.0,8.9,8.1,7.8,6.2,5.1,4.6
+MA Chidambaram Stadium,India,158,48.0,52.0,7.6,6.7,5.5,5.8,8.8,6.8
+Arun Jaitley Stadium,India,174,58.0,42.0,8.3,7.4,6.5,6.0,6.5,5.4
+Narendra Modi Stadium,India,172,62.0,38.0,8.1,7.2,7.5,6.8,6.0,5.6
+Eden Gardens,India,176,60.0,40.0,8.4,7.3,7.2,6.5,6.8,5.1
+Rajiv Gandhi International Cricket Stadium,India,168,59.0,41.0,8.2,7.1,6.8,6.2,6.5,5.8
+PCA IS Bindra Stadium Mohali,India,178,67.0,33.0,8.5,7.6,8.0,7.2,4.5,5.0
+HPCA Stadium Dharamshala,India,165,72.0,28.0,8.1,7.4,8.8,8.5,4.0,5.5
+Ekana Cricket Stadium,India,148,46.0,54.0,7.4,6.5,5.2,5.5,8.5,7.2
+Melbourne Cricket Ground,Australia,166,73.0,27.0,7.9,7.2,8.9,8.1,4.2,6.2
+Sydney Cricket Ground,Australia,162,55.0,45.0,7.8,6.9,7.2,6.5,7.8,6.0
+Adelaide Oval,Australia,172,65.0,35.0,8.0,7.3,7.8,7.0,5.8,5.5
+Perth Stadium,Australia,170,78.0,22.0,8.2,7.6,9.5,8.8,3.5,5.8
+The Gabba,Australia,168,76.0,24.0,8.1,7.5,9.2,8.6,3.8,5.9
+Junction Oval,Australia,160,64.0,36.0,7.7,7.0,7.0,6.8,5.5,6.0
+Lords,England,159,75.0,25.0,7.8,7.1,8.0,9.0,4.0,6.1
+The Oval,England,172,68.0,32.0,8.3,7.3,7.5,7.8,5.5,5.3
+Edgbaston,England,168,71.0,29.0,8.2,7.2,7.8,8.2,4.8,5.5
+Headingley,England,162,74.0,26.0,8.0,7.3,8.2,8.8,4.2,5.8
+Trent Bridge,England,180,69.0,31.0,8.7,7.6,7.5,7.5,4.6,4.8
+Wanderers Stadium,South Africa,178,74.0,26.0,8.6,7.8,9.1,8.0,4.0,5.0
+Newlands,South Africa,156,72.0,28.0,7.6,6.8,8.2,8.4,5.2,6.4
+Centurion,South Africa,175,76.0,24.0,8.4,7.7,9.3,8.5,3.8,5.2
+Kensington Oval,Barbados,158,66.0,34.0,7.7,6.9,7.6,7.2,5.8,6.1
+Providence Stadium,Guyana,142,44.0,56.0,7.1,6.2,5.0,5.2,9.0,7.5
+Sabina Park,Jamaica,164,70.0,30.0,8.0,7.2,8.3,7.8,4.5,5.8
+Daren Sammy Cricket Ground,Saint Lucia,166,65.0,35.0,8.1,7.3,7.5,7.0,5.5,5.6
+Sher-e-Bangla National Cricket Stadium,Bangladesh,140,42.0,58.0,7.2,6.1,4.8,5.0,9.2,7.8
+Gaddafi Stadium Lahore,Pakistan,176,62.0,38.0,8.4,7.4,6.8,6.0,6.2,5.1
+National Stadium Karachi,Pakistan,180,60.0,40.0,8.5,7.5,7.0,5.8,6.5,4.9
+Dubai International Cricket Stadium,UAE,155,63.0,37.0,7.7,6.8,6.8,6.2,6.4,6.3
+Sheikh Zayed Stadium Abu Dhabi,UAE,150,60.0,40.0,7.5,6.6,6.5,6.0,6.6,6.5
+Sharjah Cricket Stadium,UAE,162,52.0,48.0,8.0,7.1,5.8,5.5,7.5,4.9
+R Premadasa Stadium,Sri Lanka,145,43.0,57.0,7.3,6.3,5.0,5.2,9.1,7.4
+Pallekele International Cricket Stadium,Sri Lanka,160,58.0,42.0,7.9,7.0,6.6,6.5,7.0,5.9
+Eden Park Auckland,New Zealand,174,68.0,32.0,8.5,7.7,7.5,7.2,5.0,4.7
+Basin Reserve,New Zealand,155,77.0,23.0,7.7,7.0,8.5,9.1,4.0,6.2
+Hagley Oval,New Zealand,162,75.0,25.0,7.9,7.1,8.4,8.8,4.2,5.9
+Takashinga Sports Club,Zimbabwe,146,56.0,44.0,7.4,6.6,6.0,6.2,7.0,6.8
+Harare Sports Club,Zimbabwe,154,60.0,40.0,7.6,6.8,6.5,6.5,6.5,6.2
